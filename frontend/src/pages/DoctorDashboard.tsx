@@ -24,7 +24,12 @@ import {
   Mail,
   MapPin,
   Save,
-  FileCheck
+  FileCheck,
+  Eye,
+  ZoomIn,
+  Download,
+  Maximize2,
+  Image as ImageIcon
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -98,6 +103,21 @@ const DoctorDashboard: React.FC = () => {
   const [rejectingAptId, setRejectingAptId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState<string>('');
   const [selectedForOpSlip, setSelectedForOpSlip] = useState<any | null>(null);
+
+  // Payment Proof Screenshot Modal & Action State
+  const [viewingProofAppointment, setViewingProofAppointment] = useState<any | null>(null);
+  const [rejectingPaymentAptId, setRejectingPaymentAptId] = useState<string | null>(null);
+  const [paymentRejectReason, setPaymentRejectReason] = useState<string>('');
+
+  const getProofImageUrl = (proof: any): string => {
+    if (!proof) return '';
+    const raw = proof.screenshotUrl || proof.fileUrl || '';
+    if (!raw) return '';
+    if (raw.startsWith('http') || raw.startsWith('blob:') || raw.startsWith('data:')) {
+      return raw;
+    }
+    return raw.startsWith('/') ? raw : `/${raw}`;
+  };
 
   const fetchDoctorData = async () => {
     try {
@@ -395,6 +415,82 @@ const DoctorDashboard: React.FC = () => {
                 </div>
               ) : (
                 <div className="space-y-3">
+                  {/* Payment Queue Items in Overview */}
+                  {paymentQueue.map(a => {
+                    const proof = a.paymentProof;
+                    const imgUrl = getProofImageUrl(proof);
+                    return (
+                      <div key={a.id} className="p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div className="flex items-center space-x-3">
+                          {imgUrl ? (
+                            <button
+                              type="button"
+                              onClick={() => setViewingProofAppointment(a)}
+                              className="relative group w-14 h-14 rounded-xl overflow-hidden border-2 border-amber-400 dark:border-amber-600 flex-shrink-0 bg-black/10"
+                              title="Click to view full payment screenshot"
+                            >
+                              <img src={imgUrl} alt="Payment Proof" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                <ZoomIn className="w-4 h-4 text-white" />
+                              </div>
+                            </button>
+                          ) : (
+                            <div className="w-14 h-14 rounded-xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-700 dark:text-amber-300">
+                              <ImageIcon className="w-6 h-6" />
+                            </div>
+                          )}
+                          <div>
+                            <div className="flex items-center space-x-2">
+                              <span className="text-xs font-bold text-slate-900 dark:text-white block">
+                                {a.patient?.fullName || 'Rahul Verma'}
+                              </span>
+                              <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200 font-bold">
+                                Payment Verification Needed
+                              </span>
+                            </div>
+                            <span className="text-[11px] text-slate-500 block">
+                              Fee: ₹ {proof?.amountPaid || a.fee || 500}.00 • {new Date(a.preferredDate).toLocaleDateString()} ({a.preferredTime})
+                            </span>
+                            {proof?.notes && (
+                              <span className="text-[11px] text-slate-400 italic">Notes: {proof.notes}</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
+                          {imgUrl && (
+                            <button
+                              type="button"
+                              onClick={() => setViewingProofAppointment(a)}
+                              className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl flex items-center space-x-1 hover:bg-slate-100"
+                            >
+                              <Eye className="w-3.5 h-3.5 text-cyan-600" />
+                              <span>Inspect Screenshot</span>
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleVerifyPayment(a.id, 'VERIFY')}
+                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-sm"
+                          >
+                            Verify
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setRejectingPaymentAptId(a.id);
+                              setPaymentRejectReason('');
+                            }}
+                            className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl shadow-sm"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Regular Pending Requests in Overview */}
                   {pendingRequests.map(a => (
                     <div key={a.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-between">
                       <div>
@@ -433,34 +529,69 @@ const DoctorDashboard: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {pendingRequests.map(a => (
-                  <div key={a.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <h4 className="font-bold text-sm text-slate-900 dark:text-white">{a.patient?.fullName || 'Rahul Verma'}</h4>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300 font-bold">New</span>
+                {pendingRequests.map(a => {
+                  const proof = a.paymentProof;
+                  const imgUrl = getProofImageUrl(proof);
+                  return (
+                    <div key={a.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="flex items-start space-x-4">
+                        {imgUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setViewingProofAppointment(a)}
+                            className="relative group w-16 h-16 rounded-2xl overflow-hidden border border-cyan-500/50 flex-shrink-0 bg-black/10"
+                            title="Click to view payment proof"
+                          >
+                            <img src={imgUrl} alt="Payment Proof" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                              <ZoomIn className="w-4 h-4 text-white" />
+                            </div>
+                          </button>
+                        )}
+                        <div>
+                          <div className="flex items-center space-x-2">
+                            <h4 className="font-bold text-sm text-slate-900 dark:text-white">{a.patient?.fullName || 'Rahul Verma'}</h4>
+                            <span className="px-2 py-0.5 rounded-full text-[10px] bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300 font-bold">New</span>
+                            {imgUrl && (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold flex items-center space-x-1">
+                                <ImageIcon className="w-3 h-3" />
+                                <span>Receipt Attached</span>
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-500 mt-0.5">Phone: {a.patient?.phone || '9876543210'}</p>
+                          <p className="text-xs text-slate-500">Date: {new Date(a.preferredDate).toLocaleDateString()} | Time: {a.preferredTime}</p>
+                          {a.notes && <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 italic">"{a.notes}"</p>}
+                        </div>
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">Phone: {a.patient?.phone || '9876543210'}</p>
-                      <p className="text-xs text-slate-500">Date: {new Date(a.preferredDate).toLocaleDateString()} | Time: {a.preferredTime}</p>
-                      {a.notes && <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 italic">"{a.notes}"</p>}
-                    </div>
 
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => handleAppointmentAction(a.id, 'ACCEPT')}
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md"
-                      >
-                        Accept Request
-                      </button>
-                      <button
-                        onClick={() => setRejectingAptId(a.id)}
-                        className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl shadow-md"
-                      >
-                        Reject
-                      </button>
+                      <div className="flex items-center space-x-2">
+                        {imgUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setViewingProofAppointment(a)}
+                            className="px-3.5 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl flex items-center space-x-1 hover:bg-slate-100"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-cyan-600" />
+                            <span>View Proof</span>
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleAppointmentAction(a.id, 'ACCEPT')}
+                          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md"
+                        >
+                          Accept Request
+                        </button>
+                        <button
+                          onClick={() => setRejectingAptId(a.id)}
+                          className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl shadow-md"
+                        >
+                          Reject
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -469,7 +600,16 @@ const DoctorDashboard: React.FC = () => {
         {/* Tab 3: Payment Verification Queue */}
         {activeTab === 'payments' && (
           <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
-            <h2 className="text-base font-bold text-slate-900 dark:text-white mb-4">UPI Payment Verification Queue</h2>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">UPI Payment Verification Queue</h2>
+                <p className="text-xs text-slate-500">Inspect patient transaction screenshots and approve appointment slots.</p>
+              </div>
+              <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+                {paymentQueue.length} Waiting Verification
+              </span>
+            </div>
+
             {paymentQueue.length === 0 ? (
               <div className="py-12 text-center text-xs text-slate-400">
                 No appointment payments waiting for verification.
@@ -478,36 +618,101 @@ const DoctorDashboard: React.FC = () => {
               <div className="space-y-4">
                 {paymentQueue.map(a => {
                   const proof = a.paymentProof;
+                  const imgUrl = getProofImageUrl(proof);
                   return (
-                    <div key={a.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div key={a.id} className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
+                      
+                      {/* Left: Screenshot preview + Patient Details */}
                       <div className="flex items-start space-x-4">
-                        {proof?.screenshotUrl && (
-                          <a href={proof.screenshotUrl} target="_blank" rel="noopener noreferrer" className="block relative group">
-                            <img src={proof.screenshotUrl} alt="Payment Proof" className="w-16 h-16 rounded-xl object-cover border" />
-                            <div className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                              <ExternalLink className="w-4 h-4 text-white" />
-                            </div>
-                          </a>
+                        {imgUrl ? (
+                          <div className="relative group flex-shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => setViewingProofAppointment(a)}
+                              className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-cyan-500 dark:border-cyan-400 shadow-md bg-slate-900 relative block"
+                              title="Click to zoom / verify screenshot"
+                            >
+                              <img src={imgUrl} alt="Patient Payment Screenshot" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity text-white text-[10px] font-bold">
+                                <ZoomIn className="w-5 h-5 mb-1" />
+                                <span>Click to Zoom</span>
+                              </div>
+                            </button>
+                            <span className="inline-block mt-1 text-[9px] font-mono font-bold text-center w-full text-cyan-600 dark:text-cyan-400">
+                              📷 Screenshot
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="w-24 h-24 rounded-2xl bg-amber-100 dark:bg-amber-900/40 border border-amber-300 dark:border-amber-800 flex flex-col items-center justify-center text-amber-700 dark:text-amber-300 text-center p-2">
+                            <ImageIcon className="w-6 h-6 mb-1" />
+                            <span className="text-[10px] font-bold">No Image Found</span>
+                          </div>
                         )}
-                        <div>
-                          <h4 className="font-bold text-sm text-slate-900 dark:text-white">Patient: {a.patient?.fullName || 'Rahul Verma'}</h4>
-                          <p className="text-xs text-slate-500">Amount: ₹ {proof?.amountPaid || a.consultationFee}.00</p>
-                          <p className="text-xs text-slate-500 font-mono">Txn/UTR: {proof?.transactionId || 'N/A'}</p>
+
+                        <div className="space-y-1">
+                          <div className="flex items-center space-x-2">
+                            <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                              Patient: {a.patient?.fullName || 'Rahul Verma'}
+                            </h4>
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300">
+                              Apt #{a.appointmentNumber || a.id.slice(0, 8)}
+                            </span>
+                          </div>
+                          
+                          <p className="text-xs text-slate-500">
+                            <strong>Phone:</strong> {a.patient?.phone || 'N/A'} • <strong>Email:</strong> {a.patient?.email || 'N/A'}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            <strong>Slot:</strong> {new Date(a.preferredDate).toLocaleDateString()} at {a.preferredTime}
+                          </p>
+                          <div className="pt-1 flex flex-wrap items-center gap-2">
+                            <span className="px-2.5 py-1 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 text-xs font-bold border border-emerald-300 dark:border-emerald-800">
+                              Amount: ₹ {proof?.amountPaid || a.consultationFee || a.fee || 500}.00
+                            </span>
+                            {proof?.uploadedAt && (
+                              <span className="text-[10px] text-slate-400">
+                                Submitted: {new Date(proof.uploadedAt).toLocaleString()}
+                              </span>
+                            )}
+                          </div>
+                          {proof?.notes && (
+                            <p className="text-xs text-slate-600 dark:text-slate-300 italic pt-1">
+                              <strong>Patient Notes:</strong> "{proof.notes}"
+                            </p>
+                          )}
                         </div>
                       </div>
 
-                      <div className="flex items-center space-x-2">
+                      {/* Right: Actions */}
+                      <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-end">
+                        {imgUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setViewingProofAppointment(a)}
+                            className="px-4 py-2.5 bg-cyan-50 dark:bg-cyan-950/60 hover:bg-cyan-100 dark:hover:bg-cyan-900 border border-cyan-300 dark:border-cyan-800 text-cyan-700 dark:text-cyan-300 font-bold text-xs rounded-xl shadow-sm flex items-center space-x-1.5 transition-colors"
+                          >
+                            <Eye className="w-4 h-4" />
+                            <span>Inspect Screenshot</span>
+                          </button>
+                        )}
                         <button
+                          type="button"
                           onClick={() => handleVerifyPayment(a.id, 'VERIFY')}
-                          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-md"
+                          className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-md flex items-center space-x-1.5"
                         >
-                          Verify & Confirm Slot
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Verify & Confirm Slot</span>
                         </button>
                         <button
-                          onClick={() => handleVerifyPayment(a.id, 'REJECT', 'Invalid Transaction Screenshot')}
-                          className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl shadow-md"
+                          type="button"
+                          onClick={() => {
+                            setRejectingPaymentAptId(a.id);
+                            setPaymentRejectReason('');
+                          }}
+                          className="px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl shadow-md flex items-center space-x-1.5"
                         >
-                          Reject Payment
+                          <XCircle className="w-4 h-4" />
+                          <span>Reject Payment</span>
                         </button>
                       </div>
                     </div>
@@ -528,42 +733,62 @@ const DoctorDashboard: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                {appointments.map(a => (
-                  <div key={a.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-between text-xs">
-                    <div>
-                      <span className="font-bold text-slate-900 dark:text-white block">{a.patient?.fullName || 'Patient'}</span>
-                      <span className="text-slate-400">{new Date(a.preferredDate).toLocaleDateString()} at {a.preferredTime}</span>
+                {appointments.map(a => {
+                  const proof = a.paymentProof;
+                  const imgUrl = getProofImageUrl(proof);
+                  return (
+                    <div key={a.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs gap-3">
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <span className="font-bold text-slate-900 dark:text-white block">{a.patient?.fullName || 'Patient'}</span>
+                          <span className="text-slate-400">({a.patient?.phone || 'No Phone'})</span>
+                        </div>
+                        <span className="text-slate-400">{new Date(a.preferredDate).toLocaleDateString()} at {a.preferredTime}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className={`px-2.5 py-1 rounded-full font-bold text-[10px] ${
+                          a.status === 'CONFIRMED' || a.status === 'ACCEPTED' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' :
+                          a.status === 'REJECTED' ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300' :
+                          a.status === 'COMPLETED' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300' :
+                          'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
+                        }`}>
+                          {a.status}
+                        </span>
+
+                        {imgUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setViewingProofAppointment(a)}
+                            className="px-2.5 py-1 bg-amber-100 dark:bg-amber-950/80 hover:bg-amber-200 dark:hover:bg-amber-900 text-amber-800 dark:text-amber-200 font-bold rounded-lg text-[11px] flex items-center space-x-1 border border-amber-300 dark:border-amber-800"
+                            title="View uploaded payment receipt"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Payment Proof</span>
+                          </button>
+                        )}
+
+                        {(a.status === 'CONFIRMED' || a.status === 'COMPLETED') && (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedForOpSlip(a)}
+                            className="px-3 py-1 bg-cyan-100 dark:bg-cyan-950/80 hover:bg-cyan-200 dark:hover:bg-cyan-900 text-cyan-700 dark:text-cyan-300 font-bold rounded-lg text-[11px] flex items-center space-x-1 border border-cyan-300 dark:border-cyan-800 transition-colors"
+                          >
+                            <FileCheck className="w-3.5 h-3.5" />
+                            <span>OP Form</span>
+                          </button>
+                        )}
+                        {a.status === 'CONFIRMED' && (
+                          <button
+                            onClick={() => handleAppointmentAction(a.id, 'COMPLETE')}
+                            className="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg text-[11px]"
+                          >
+                            Mark Complete
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <span className={`px-2.5 py-1 rounded-full font-bold text-[10px] ${
-                        a.status === 'CONFIRMED' || a.status === 'ACCEPTED' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300' :
-                        a.status === 'REJECTED' ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300' :
-                        a.status === 'COMPLETED' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300' :
-                        'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
-                      }`}>
-                        {a.status}
-                      </span>
-                      {(a.status === 'CONFIRMED' || a.status === 'COMPLETED') && (
-                        <button
-                          type="button"
-                          onClick={() => setSelectedForOpSlip(a)}
-                          className="px-3 py-1 bg-cyan-100 dark:bg-cyan-950/80 hover:bg-cyan-200 dark:hover:bg-cyan-900 text-cyan-700 dark:text-cyan-300 font-bold rounded-lg text-[11px] flex items-center space-x-1 border border-cyan-300 dark:border-cyan-800 transition-colors"
-                        >
-                          <FileCheck className="w-3.5 h-3.5" />
-                          <span>OP Form</span>
-                        </button>
-                      )}
-                      {a.status === 'CONFIRMED' && (
-                        <button
-                          onClick={() => handleAppointmentAction(a.id, 'COMPLETE')}
-                          className="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg text-[11px]"
-                        >
-                          Mark Complete
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -835,34 +1060,231 @@ const DoctorDashboard: React.FC = () => {
 
       </div>
 
-      {/* Reject Modal */}
+      {/* Reject Appointment Modal */}
       {rejectingAptId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl p-6 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl p-6 space-y-4 border border-slate-200 dark:border-slate-800 shadow-2xl">
             <h3 className="text-base font-bold text-slate-900 dark:text-white">Reject Appointment Request</h3>
+            <p className="text-xs text-slate-500">Provide a reason for rejecting this consultation request.</p>
             <textarea
               rows={3}
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
-              placeholder="Reason for rejection (e.g. Schedule conflict, doctor on leave)..."
-              className="w-full p-2.5 rounded-xl border text-xs"
+              placeholder="Reason for rejection (e.g. Schedule conflict, doctor on emergency leave)..."
+              className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-rose-500"
             />
-            <div className="flex justify-end space-x-2">
+            <div className="flex justify-end space-x-2 pt-2">
               <button
                 type="button"
                 onClick={() => setRejectingAptId(null)}
-                className="px-4 py-2 text-xs font-semibold text-slate-500"
+                className="px-4 py-2 text-xs font-semibold text-slate-500 hover:text-slate-700"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={() => handleAppointmentAction(rejectingAptId, 'REJECT', rejectReason)}
-                className="px-4 py-2 bg-rose-600 text-white text-xs font-bold rounded-xl"
+                className="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl shadow-md"
               >
                 Confirm Rejection
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Payment Proof Modal */}
+      {rejectingPaymentAptId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl p-6 space-y-4 border border-slate-200 dark:border-slate-800 shadow-2xl">
+            <div className="flex items-center space-x-2 text-rose-600">
+              <XCircle className="w-5 h-5" />
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Reject Payment Proof</h3>
+            </div>
+            <p className="text-xs text-slate-500">
+              The patient will be notified to re-upload a valid transaction screenshot or receipt.
+            </p>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Reason for Rejection
+              </label>
+              <textarea
+                rows={3}
+                value={paymentRejectReason}
+                onChange={(e) => setPaymentRejectReason(e.target.value)}
+                placeholder="e.g. Transaction ID / UTR is unreadable, Amount mismatch, Duplicate screenshot..."
+                className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-rose-500"
+              />
+            </div>
+            <div className="flex justify-end space-x-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setRejectingPaymentAptId(null)}
+                className="px-4 py-2 text-xs font-semibold text-slate-500 hover:text-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  handleVerifyPayment(rejectingPaymentAptId, 'REJECT', paymentRejectReason || 'Invalid or unreadable transaction screenshot');
+                  setRejectingPaymentAptId(null);
+                  if (viewingProofAppointment?.id === rejectingPaymentAptId) {
+                    setViewingProofAppointment(null);
+                  }
+                }}
+                className="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl shadow-md"
+              >
+                Reject & Request Re-upload
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Proof Screenshot Inspector Lightbox Modal */}
+      {viewingProofAppointment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in">
+          <div className="w-full max-w-4xl bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[92vh]">
+            
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-2xl bg-cyan-100 dark:bg-cyan-950 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
+                  <ImageIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                    <span>Payment Proof Verification</span>
+                    <span className="text-xs px-2 py-0.5 rounded-md bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300 font-mono">
+                      #{viewingProofAppointment.appointmentNumber || viewingProofAppointment.id.slice(0, 8)}
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Patient: <strong>{viewingProofAppointment.patient?.fullName || 'Rahul Verma'}</strong> • Phone: {viewingProofAppointment.patient?.phone || 'N/A'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewingProofAppointment(null)}
+                className="p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Modal Body: Image Preview + Metadata */}
+            <div className="flex-1 overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              {/* Left 2 Cols: Big Screenshot Image */}
+              <div className="md:col-span-2 flex flex-col items-center justify-center bg-slate-950/90 rounded-2xl p-4 border border-slate-800 min-h-[320px] relative">
+                {getProofImageUrl(viewingProofAppointment.paymentProof) ? (
+                  <div className="w-full flex flex-col items-center">
+                    <img
+                      src={getProofImageUrl(viewingProofAppointment.paymentProof)}
+                      alt="Uploaded Payment Receipt Screenshot"
+                      className="max-h-[500px] w-auto max-w-full object-contain rounded-xl shadow-2xl border border-slate-700"
+                    />
+                    <div className="mt-3 flex items-center space-x-3">
+                      <a
+                        href={getProofImageUrl(viewingProofAppointment.paymentProof)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3.5 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl flex items-center space-x-1.5 backdrop-blur-sm transition-colors"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>Open Full Image in New Tab</span>
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center text-slate-400 py-12">
+                    <ImageIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p className="text-xs">No screenshot image found for this transaction.</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Right 1 Col: Transaction Details & Verification Actions */}
+              <div className="flex flex-col justify-between space-y-4">
+                <div className="space-y-4">
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2">
+                    <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider block">
+                      Transaction Summary
+                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-500">Consultation Fee:</span>
+                      <span className="text-base font-black text-emerald-600 dark:text-emerald-400 font-mono">
+                        ₹ {viewingProofAppointment.paymentProof?.amountPaid || viewingProofAppointment.consultationFee || viewingProofAppointment.fee || 500}.00
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-500">Payment Status:</span>
+                      <span className="px-2 py-0.5 rounded-full font-bold text-[10px] bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300">
+                        {viewingProofAppointment.payment?.status || viewingProofAppointment.status || 'SUBMITTED'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-500">Requested Slot:</span>
+                      <span className="font-semibold text-slate-900 dark:text-white">
+                        {new Date(viewingProofAppointment.preferredDate).toLocaleDateString()} ({viewingProofAppointment.preferredTime})
+                      </span>
+                    </div>
+                    {viewingProofAppointment.paymentProof?.uploadedAt && (
+                      <div className="text-[11px] text-slate-400 pt-1 border-t border-slate-200 dark:border-slate-700">
+                        Uploaded on: {new Date(viewingProofAppointment.paymentProof.uploadedAt).toLocaleString()}
+                      </div>
+                    )}
+                  </div>
+
+                  {viewingProofAppointment.paymentProof?.notes && (
+                    <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+                        Patient's Transaction Notes / UTR
+                      </span>
+                      <p className="text-xs text-slate-800 dark:text-slate-200 font-mono bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                        {viewingProofAppointment.paymentProof.notes}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="p-3.5 rounded-2xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800/60 text-xs text-cyan-900 dark:text-cyan-200 leading-relaxed">
+                    💡 <strong>Doctor Verification Check:</strong> Verify the UTR / Ref number and amount on the screenshot against your UPI / bank account before confirming.
+                  </div>
+                </div>
+
+                {/* Bottom Verification Buttons */}
+                <div className="space-y-2 pt-4 border-t border-slate-200 dark:border-slate-800">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await handleVerifyPayment(viewingProofAppointment.id, 'VERIFY');
+                      setViewingProofAppointment(null);
+                    }}
+                    className="w-full py-3.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-emerald-500/25 flex items-center justify-center space-x-2 transition-all active:scale-98"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Verify & Confirm Slot</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRejectingPaymentAptId(viewingProofAppointment.id);
+                      setPaymentRejectReason('');
+                    }}
+                    className="w-full py-2.5 bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-300 font-bold text-xs rounded-2xl border border-rose-200 dark:border-rose-800 flex items-center justify-center space-x-1.5 transition-colors"
+                  >
+                    <XCircle className="w-4 h-4" />
+                    <span>Reject Payment Screenshot</span>
+                  </button>
+                </div>
+
+              </div>
+
+            </div>
+
           </div>
         </div>
       )}
@@ -880,3 +1302,4 @@ const DoctorDashboard: React.FC = () => {
 };
 
 export default DoctorDashboard;
+

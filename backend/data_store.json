@@ -30,6 +30,16 @@
       "isVerified": true,
       "createdAt": "2026-10-05T04:02:50.017Z",
       "updatedAt": "2026-10-05T04:02:50.017Z"
+    },
+    {
+      "id": "usr-doc-1791271394642-pmbo",
+      "phone": "919176119402",
+      "email": "kani@gmail.com",
+      "passwordHash": "$2a$10$44MQ6pMAKgtl3XQc7nIdW.iGXZWn2auhLesWP1uSv.MsMabfk7Lme",
+      "role": "DOCTOR",
+      "isVerified": true,
+      "createdAt": "2026-10-06T07:23:14.642Z",
+      "updatedAt": "2026-10-06T07:23:14.642Z"
     }
   ],
   "webauthnCredentials": [],
@@ -143,6 +153,31 @@
       "verificationStatus": "REGISTERED",
       "createdAt": "2026-10-05T04:02:50.017Z",
       "updatedAt": "2026-10-06T03:34:53.710Z"
+    },
+    {
+      "id": "doc-prof-1791271394642",
+      "userId": "usr-doc-1791271394642-pmbo",
+      "fullName": "kanimozhi",
+      "qualification": "BDS, MDS",
+      "registrationNumber": "DCI-REG-394642",
+      "specialization": "Oral Medicine & Radiology",
+      "experienceYears": 5,
+      "bio": "Practicing oral oncology and precancerous lesion specialist at Clinical Centre.",
+      "consultationFee": 500,
+      "availableDays": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday"
+      ],
+      "availableHours": "09:00 - 17:00",
+      "profilePhoto": "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=400&auto=format&fit=crop&q=80",
+      "upiId": "919176119402@upi",
+      "qrCodeUrl": "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=919176119402%40upi&pn=kanimozhi&am=500&cu=INR",
+      "verificationStatus": "REGISTERED",
+      "createdAt": "2026-10-06T07:23:14.642Z",
+      "updatedAt": "2026-10-06T07:23:14.642Z"
     }
   ],
   "hospitals": [
@@ -160,6 +195,21 @@
       "phone": "917396986560",
       "createdAt": "2026-10-05T04:02:50.017Z",
       "updatedAt": "2026-10-06T03:34:53.710Z"
+    },
+    {
+      "id": "hosp-1791271394642",
+      "doctorProfileId": "doc-prof-1791271394642",
+      "name": "Oral Care Speciality Hospital",
+      "address": "Medical Centre Road",
+      "city": "Hyderabad",
+      "state": "Telangana",
+      "pincode": "500001",
+      "country": "India",
+      "latitude": 17.41471151771085,
+      "longitude": 78.52528402797422,
+      "phone": "919176119402",
+      "createdAt": "2026-10-06T07:23:14.643Z",
+      "updatedAt": "2026-10-06T07:23:14.643Z"
     }
   ],
   "doctorAvailabilities": [],
@@ -1857,6 +1907,22 @@
       "fee": 500,
       "createdAt": "2026-10-05T04:05:23.306Z",
       "updatedAt": "2026-10-06T03:35:33.776Z"
+    },
+    {
+      "id": "apt-1791271492206-9kph",
+      "appointmentNumber": "OPMD-APT-2026-000004",
+      "patientProfileId": "pat-prof-1791171808065",
+      "doctorProfileId": "doc-prof-1791271394642",
+      "hospitalId": "hosp-1791271394642",
+      "screeningId": null,
+      "preferredDate": "2026-10-07T00:00:00.000Z",
+      "preferredTime": "10:30 AM",
+      "reason": "Oral screening evaluation / Biopsy consultation",
+      "message": "hi sir",
+      "status": "CONFIRMED",
+      "fee": 500,
+      "createdAt": "2026-10-06T07:24:52.207Z",
+      "updatedAt": "2026-10-06T07:27:48.728Z"
     }
   ],
   "appointmentStatusHistories": [
@@ -1949,6 +2015,42 @@
       "changedByUserId": "usr-doc-1791172970017-0d5f",
       "reason": "COMPLETE",
       "timestamp": "2026-10-06T03:35:33.776Z"
+    },
+    {
+      "id": "ash-1791271492207",
+      "appointmentId": "apt-1791271492206-9kph",
+      "fromStatus": "PENDING",
+      "toStatus": "PENDING",
+      "changedByUserId": "usr-pat-1791171808065-3ust",
+      "reason": "Initial consultation request submitted by patient",
+      "timestamp": "2026-10-06T07:24:52.207Z"
+    },
+    {
+      "id": "ash-1791271527824",
+      "appointmentId": "apt-1791271492206-9kph",
+      "fromStatus": "PENDING",
+      "toStatus": "ACCEPTED",
+      "changedByUserId": "usr-doc-1791271394642-pmbo",
+      "reason": "ACCEPT",
+      "timestamp": "2026-10-06T07:25:27.824Z"
+    },
+    {
+      "id": "ash-1791271634104",
+      "appointmentId": "apt-1791271492206-9kph",
+      "fromStatus": "ACCEPTED",
+      "toStatus": "PAYMENT_SUBMITTED",
+      "changedByUserId": "usr-pat-1791171808065-3ust",
+      "reason": "Patient submitted payment screenshot for verification",
+      "timestamp": "2026-10-06T07:27:14.104Z"
+    },
+    {
+      "id": "ash-1791271668728",
+      "appointmentId": "apt-1791271492206-9kph",
+      "fromStatus": "PAYMENT_SUBMITTED",
+      "toStatus": "CONFIRMED",
+      "changedByUserId": "usr-doc-1791271394642-pmbo",
+      "reason": "Payment confirmed by doctor",
+      "timestamp": "2026-10-06T07:27:48.728Z"
     }
   ],
   "payments": [
@@ -1969,6 +2071,15 @@
       "status": "VERIFIED",
       "createdAt": "2026-10-05T04:10:21.967Z",
       "updatedAt": "2026-10-05T04:12:41.125Z"
+    },
+    {
+      "id": "pay-1791271527824",
+      "appointmentId": "apt-1791271492206-9kph",
+      "amount": 500,
+      "currency": "INR",
+      "status": "VERIFIED",
+      "createdAt": "2026-10-06T07:25:27.824Z",
+      "updatedAt": "2026-10-06T07:27:48.728Z"
     }
   ],
   "paymentProofs": [
@@ -1993,6 +2104,17 @@
       "rejectionReason": null,
       "verifiedAt": "2026-10-05T04:12:41.125Z",
       "verifiedByUserId": "usr-doc-1791172970017-0d5f"
+    },
+    {
+      "id": "proof-1791271634104",
+      "paymentId": "pay-1791271527824",
+      "fileUrl": "/uploads/file-1791271630667-616319878.png",
+      "fileType": "image/jpeg",
+      "uploadedAt": "2026-10-06T07:27:14.104Z",
+      "notes": "UPI / Bank Transfer Screenshot",
+      "rejectionReason": null,
+      "verifiedAt": "2026-10-06T07:27:48.728Z",
+      "verifiedByUserId": "usr-doc-1791271394642-pmbo"
     }
   ],
   "notifications": [
@@ -2145,6 +2267,46 @@
       "isRead": false,
       "link": "/patient/screenings/scr-1791259388022-9h14",
       "createdAt": "2026-10-06T04:03:08.037Z"
+    },
+    {
+      "id": "notif-1791271492207",
+      "userId": "usr-doc-1791271394642-pmbo",
+      "title": "New Patient Consultation Request!",
+      "message": "Patient sudharshan requested an appointment on 2026-10-07 at 10:30 AM.",
+      "type": "APPOINTMENT_REQUESTED",
+      "isRead": false,
+      "link": "/doctor/requests",
+      "createdAt": "2026-10-06T07:24:52.207Z"
+    },
+    {
+      "id": "notif-1791271527824",
+      "userId": "usr-pat-1791171808065-3ust",
+      "title": "Appointment Request Accepted!",
+      "message": "Dr. kanimozhi accepted your appointment request. Please proceed with payment verification.",
+      "type": "APPOINTMENT_ACCEPTED",
+      "isRead": false,
+      "link": "/patient/appointments",
+      "createdAt": "2026-10-06T07:25:27.824Z"
+    },
+    {
+      "id": "notif-1791271634104",
+      "userId": "usr-doc-1791271394642-pmbo",
+      "title": "Payment Proof Submitted",
+      "message": "Patient submitted payment receipt for appointment #OPMD-APT-2026-000004. Please review and verify.",
+      "type": "PAYMENT_SUBMITTED",
+      "isRead": false,
+      "link": "/doctor/payments",
+      "createdAt": "2026-10-06T07:27:14.104Z"
+    },
+    {
+      "id": "notif-1791271668728",
+      "userId": "usr-pat-1791171808065-3ust",
+      "title": "Consultation Confirmed! 🎉",
+      "message": "Your payment was verified by Dr. kanimozhi. Appointment #OPMD-APT-2026-000004 is CONFIRMED.",
+      "type": "APPOINTMENT_CONFIRMED",
+      "isRead": false,
+      "link": "/patient/appointments/apt-1791271492206-9kph",
+      "createdAt": "2026-10-06T07:27:48.728Z"
     }
   ],
   "datasets": [],
@@ -2170,6 +2332,61 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "audit-1791271668864-r5zdu",
+      "userId": "usr-doc-1791271394642-pmbo",
+      "action": "PAYMENT_VERIFY",
+      "resource": "Payment",
+      "resourceId": "pay-1791271527824",
+      "detailsJson": "{\"status\":\"VERIFIED\"}",
+      "ipAddress": "127.0.0.1",
+      "userAgent": "OPMD Care Client",
+      "createdAt": "2026-10-06T07:27:48.864Z"
+    },
+    {
+      "id": "audit-1791271634382-67d9f",
+      "userId": "usr-pat-1791171808065-3ust",
+      "action": "SUBMIT_PAYMENT_PROOF",
+      "resource": "Payment",
+      "resourceId": "pay-1791271527824",
+      "detailsJson": "{\"appointmentId\":\"apt-1791271492206-9kph\"}",
+      "ipAddress": "127.0.0.1",
+      "userAgent": "OPMD Care Client",
+      "createdAt": "2026-10-06T07:27:14.382Z"
+    },
+    {
+      "id": "audit-1791271527990-4kg9d",
+      "userId": "usr-doc-1791271394642-pmbo",
+      "action": "APPOINTMENT_ACCEPT",
+      "resource": "Appointment",
+      "resourceId": "apt-1791271492206-9kph",
+      "detailsJson": "{\"fromStatus\":\"PENDING\",\"toStatus\":\"ACCEPTED\"}",
+      "ipAddress": "127.0.0.1",
+      "userAgent": "OPMD Care Client",
+      "createdAt": "2026-10-06T07:25:27.990Z"
+    },
+    {
+      "id": "audit-1791271492384-efs3s",
+      "userId": "usr-pat-1791171808065-3ust",
+      "action": "CREATE_APPOINTMENT_REQUEST",
+      "resource": "Appointment",
+      "resourceId": "apt-1791271492206-9kph",
+      "detailsJson": "{\"appointmentNumber\":\"OPMD-APT-2026-000004\"}",
+      "ipAddress": "127.0.0.1",
+      "userAgent": "OPMD Care Client",
+      "createdAt": "2026-10-06T07:24:52.384Z"
+    },
+    {
+      "id": "audit-1791271394807-5yc2i",
+      "userId": "usr-doc-1791271394642-pmbo",
+      "action": "REGISTER_DOCTOR",
+      "resource": "DoctorProfile",
+      "resourceId": "doc-prof-1791271394642",
+      "detailsJson": "{\"name\":\"kanimozhi\",\"phone\":\"919176119402\"}",
+      "ipAddress": "127.0.0.1",
+      "userAgent": "OPMD Care Client",
+      "createdAt": "2026-10-06T07:23:14.807Z"
+    },
     {
       "id": "audit-1791259388161-q81v3",
       "userId": "usr-pat-1791171808065-3ust",

@@ -156,6 +156,12 @@ export async function getDoctorAppointments(req: AuthRequest, res: Response): Pr
         const hospital = memoryDb.hospitals.find(h => h.id === a.hospitalId || h.doctorProfileId === doc.id);
         const payment = memoryDb.payments.find(p => p.appointmentId === a.id);
         const paymentProof = payment ? memoryDb.paymentProofs.find(pp => pp.paymentId === payment.id) : null;
+        const mappedProof = paymentProof ? {
+          ...paymentProof,
+          screenshotUrl: paymentProof.fileUrl,
+          fileUrl: paymentProof.fileUrl,
+          amountPaid: payment?.amount || a.fee || 500
+        } : null;
         
         let screening: any = null;
         if (a.screeningId) {
@@ -174,7 +180,7 @@ export async function getDoctorAppointments(req: AuthRequest, res: Response): Pr
           doctor: doc,
           hospital,
           payment,
-          paymentProof,
+          paymentProof: mappedProof,
           screening,
           history: memoryDb.appointmentStatusHistories.filter(h => h.appointmentId === a.id)
         };
