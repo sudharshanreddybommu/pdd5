@@ -1919,10 +1919,10 @@
       "preferredTime": "10:30 AM",
       "reason": "Oral screening evaluation / Biopsy consultation",
       "message": "hi sir",
-      "status": "CONFIRMED",
+      "status": "PAYMENT_PENDING",
       "fee": 500,
       "createdAt": "2026-10-06T07:24:52.207Z",
-      "updatedAt": "2026-10-06T07:27:48.728Z"
+      "updatedAt": "2026-10-06T07:37:16.060Z"
     }
   ],
   "appointmentStatusHistories": [
@@ -2051,6 +2051,15 @@
       "changedByUserId": "usr-doc-1791271394642-pmbo",
       "reason": "Payment confirmed by doctor",
       "timestamp": "2026-10-06T07:27:48.728Z"
+    },
+    {
+      "id": "ash-1791272236060",
+      "appointmentId": "apt-1791271492206-9kph",
+      "fromStatus": "CONFIRMED",
+      "toStatus": "PAYMENT_PENDING",
+      "changedByUserId": "usr-doc-1791271394642-pmbo",
+      "reason": "Payment rejected: Invalid or unreadable transaction screenshot",
+      "timestamp": "2026-10-06T07:37:16.060Z"
     }
   ],
   "payments": [
@@ -2077,9 +2086,9 @@
       "appointmentId": "apt-1791271492206-9kph",
       "amount": 500,
       "currency": "INR",
-      "status": "VERIFIED",
+      "status": "REJECTED",
       "createdAt": "2026-10-06T07:25:27.824Z",
-      "updatedAt": "2026-10-06T07:27:48.728Z"
+      "updatedAt": "2026-10-06T07:37:16.060Z"
     }
   ],
   "paymentProofs": [
@@ -2112,7 +2121,7 @@
       "fileType": "image/jpeg",
       "uploadedAt": "2026-10-06T07:27:14.104Z",
       "notes": "UPI / Bank Transfer Screenshot",
-      "rejectionReason": null,
+      "rejectionReason": "Invalid or unreadable transaction screenshot",
       "verifiedAt": "2026-10-06T07:27:48.728Z",
       "verifiedByUserId": "usr-doc-1791271394642-pmbo"
     }
@@ -2307,6 +2316,16 @@
       "isRead": false,
       "link": "/patient/appointments/apt-1791271492206-9kph",
       "createdAt": "2026-10-06T07:27:48.728Z"
+    },
+    {
+      "id": "notif-1791272236060",
+      "userId": "usr-pat-1791171808065-3ust",
+      "title": "Payment Verification Unsuccessful",
+      "message": "Payment could not be verified: Invalid or unreadable transaction screenshot. Please re-upload your receipt.",
+      "type": "PAYMENT_REJECTED",
+      "isRead": false,
+      "link": "/patient/appointments/apt-1791271492206-9kph",
+      "createdAt": "2026-10-06T07:37:16.060Z"
     }
   ],
   "datasets": [],
@@ -2332,6 +2351,17 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "audit-1791272236204-4cdmm",
+      "userId": "usr-doc-1791271394642-pmbo",
+      "action": "PAYMENT_REJECT",
+      "resource": "Payment",
+      "resourceId": "pay-1791271527824",
+      "detailsJson": "{\"status\":\"REJECTED\"}",
+      "ipAddress": "127.0.0.1",
+      "userAgent": "OPMD Care Client",
+      "createdAt": "2026-10-06T07:37:16.204Z"
+    },
     {
       "id": "audit-1791271668864-r5zdu",
       "userId": "usr-doc-1791271394642-pmbo",
