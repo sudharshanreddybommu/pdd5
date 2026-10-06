@@ -1,0 +1,398 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PATIENT
+  DOCTOR
+  ADMIN
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum AppointmentStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  PAYMENT_PENDING
+  PAYMENT_SUBMITTED
+  PAYMENT_VERIFICATION
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUBMITTED
+  VERIFIED
+  REJECTED
+}
+
+enum RiskCategory {
+  LOWER_RISK
+  REQUIRES_PROFESSIONAL_EVALUATION
+  HIGHER_RISK
+}
+
+enum ImageType {
+  FRONT
+  LEFT
+  RIGHT
+}
+
+enum SymptomResponse {
+  YES
+  NO
+  NOT_SURE
+}
+
+model User {
+  id                String             @id @default(uuid())
+  email             String             @unique
+  passwordHash      String
+  role              Role               @default(PATIENT)
+  isVerified        Boolean            @default(false)
+  rememberToken     String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  patientProfile    PatientProfile?
+  doctorProfile     DoctorProfile?
+  emailVerifications EmailVerification[]
+  passwordResets    PasswordReset[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+}
+
+model EmailVerification {
+  id          String   @id @default(uuid())
+  userId      String
+  tokenHash   String
+  expiresAt   DateTime
+  isUsed      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PasswordReset {
+  id          String   @id @default(uuid())
+  userId      String
+  tokenHash   String
+  expiresAt   DateTime
+  isUsed      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PatientProfile {
+  id                   String        @id @default(uuid())
+  userId               String        @unique
+  fullName             String
+  dob                  DateTime?
+  gender               String?
+  phone                String?
+  address              String?
+  city                 String?
+  state                String?
+  country              String?       @default("India")
+  emergencyContact     String?
+  tobaccoUse           String?
+  smokingHistory       String?
+  alcoholUse           String?
+  previousOralLesions  String?
+  previousOralSurgery  String?
+  familyHistory        String?
+  medicalConditions    String?
+  currentMedication    String?
+  allergies            String?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  user                 User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  screenings           Screening[]
+  appointments         Appointment[]
+}
+
+model DoctorProfile {
+  id                 String              @id @default(uuid())
+  userId             String              @unique
+  fullName           String
+  qualification      String
+  specialization     String
+  licenseNumber      String
+  experienceYears    Int                 @default(0)
+  phone              String
+  consultationFee    Float               @default(500)
+  availableDays      String?             // JSON array or comma separated
+  availableHours     String?             // e.g. "09:00 - 17:00"
+  profilePhoto       String?
+  qrCodeUrl          String?
+  verificationStatus VerificationStatus  @default(PENDING)
+  rejectionReason    String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hospitals          Hospital[]
+  availabilities     DoctorAvailability[]
+  appointments       Appointment[]
+}
+
+model Hospital {
+  id              String        @id @default(uuid())
+  doctorProfileId String
+  name            String
+  address         String
+  city            String
+  state           String
+  country         String        @default("India")
+  latitude        Float?
+  longitude       Float?
+  phone           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  doctorProfile   DoctorProfile @relation(fields: [doctorProfileId], references: [id], onDelete: Cascade)
+  appointments    Appointment[]
+}
+
+model DoctorAvailability {
+  id              String        @id @default(uuid())
+  doctorProfileId String
+  dayOfWeek       Int           // 0 = Sunday, 1 = Monday, etc.
+  startTime       String        // "09:00"
+  endTime         String        // "17:00"
+  isAvailable     Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  doctorProfile   DoctorProfile @relation(fields: [doctorProfileId], references: [id], onDelete: Cascade)
+}
+
+model Screening {
+  id                 String             @id @default(uuid())
+  screeningNumber    String             @unique
+  patientProfileId   String
+  status             String             @default("COMPLETED")
+  riskCategory       RiskCategory       @default(LOWER_RISK)
+  overallScore       Float              @default(0.0)
+  confidence         Float              @default(0.0)
+  notes              String?
+  completedAt        DateTime?          @default(now())
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  patientProfile     PatientProfile     @relation(fields: [patientProfileId], references: [id], onDelete: Cascade)
+  images             ScreeningImage[]
+  symptoms           ScreeningSymptom[]
+  prediction         Prediction?
+  report             Report?
+  appointments       Appointment[]
+}
+
+model ScreeningImage {
+  id               String       @id @default(uuid())
+  screeningId      String
+  imageType        ImageType
+  imageUrl         String
+  blurScore        Float?
+  brightnessScore  Float?
+  resolution       String?
+  qualityPassed    Boolean      @default(true)
+  notes            String?
+  createdAt        DateTime     @default(now())
+
+  screening        Screening    @relation(fields: [screeningId], references: [id], onDelete: Cascade)
+}
+
+model Symptom {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  code        String   @unique
+  description String?
+  isCommon    Boolean  @default(true)
+  category    String?
+  createdAt   DateTime @default(now())
+}
+
+model ScreeningSymptom {
+  id           String          @id @default(uuid())
+  screeningId  String
+  symptomId    String?
+  symptomName  String
+  response     SymptomResponse @default(NO)
+  duration     String?         // "Less than 1 week", "1–2 weeks", etc.
+  severity     String?         // "Mild", "Moderate", "Severe"
+  notes        String?
+  createdAt    DateTime        @default(now())
+
+  screening    Screening       @relation(fields: [screeningId], references: [id], onDelete: Cascade)
+}
+
+model Prediction {
+  id                       String       @id @default(uuid())
+  screeningId              String       @unique
+  modelVersion             String       @default("v1.0.0-demo")
+  riskCategory             RiskCategory @default(LOWER_RISK)
+  probability              Float        @default(0.0)
+  confidence               Float        @default(0.0)
+  imagePredictionJson      String?      // JSON string
+  structuredPredictionJson String?      // JSON string
+  rawResponseJson          String?      // JSON string
+  isDemoModel              Boolean      @default(true)
+  createdAt                DateTime     @default(now())
+
+  screening                Screening    @relation(fields: [screeningId], references: [id], onDelete: Cascade)
+}
+
+model Report {
+  id           String       @id @default(uuid())
+  reportNumber String       @unique
+  screeningId  String       @unique
+  pdfUrl       String?
+  generatedAt  DateTime     @default(now())
+  summaryText  String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  screening    Screening    @relation(fields: [screeningId], references: [id], onDelete: Cascade)
+}
+
+model Appointment {
+  id                 String                    @id @default(uuid())
+  appointmentNumber  String                    @unique // e.g. OPMD-APT-2026-000001
+  patientProfileId   String
+  doctorProfileId    String
+  hospitalId         String?
+  screeningId        String?
+  preferredDate      DateTime
+  preferredTime      String                    // "10:30 AM"
+  reason             String?
+  message            String?
+  status             AppointmentStatus         @default(PENDING)
+  fee                Float                     @default(0.0)
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+
+  patientProfile     PatientProfile            @relation(fields: [patientProfileId], references: [id], onDelete: Cascade)
+  doctorProfile      DoctorProfile             @relation(fields: [doctorProfileId], references: [id], onDelete: Cascade)
+  hospital           Hospital?                 @relation(fields: [hospitalId], references: [id], onDelete: SetNull)
+  screening          Screening?                @relation(fields: [screeningId], references: [id], onDelete: SetNull)
+  statusHistory      AppointmentStatusHistory[]
+  payment            Payment?
+}
+
+model AppointmentStatusHistory {
+  id              String            @id @default(uuid())
+  appointmentId   String
+  fromStatus      AppointmentStatus
+  toStatus        AppointmentStatus
+  changedByUserId String?
+  reason          String?
+  timestamp       DateTime          @default(now())
+
+  appointment     Appointment       @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id            String        @id @default(uuid())
+  appointmentId String        @unique
+  amount        Float
+  currency      String        @default("INR")
+  status        PaymentStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  appointment   Appointment   @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  proofs        PaymentProof[]
+}
+
+model PaymentProof {
+  id               String       @id @default(uuid())
+  paymentId        String
+  fileUrl          String
+  fileType         String?      // "image/png", "application/pdf"
+  uploadedAt       DateTime     @default(now())
+  notes            String?
+  rejectionReason  String?
+  verifiedAt       DateTime?
+  verifiedByUserId String?
+
+  payment          Payment      @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id           String   @id @default(uuid())
+  userId       String
+  title        String
+  message      String
+  type         String   @default("INFO")
+  isRead       Boolean  @default(false)
+  link         String?
+  metadataJson String?
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Dataset {
+  id                 String   @id @default(uuid())
+  name               String
+  version            String
+  fileUrl            String?
+  fileType           String   @default("CSV")
+  recordCount        Int      @default(0)
+  featureCount       Int      @default(0)
+  missingValuesCount Int      @default(0)
+  classDistributionJson String?
+  validationStatus   String   @default("VALID")
+  uploadedByUserId   String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model MLModel {
+  id             String   @id @default(uuid())
+  name           String
+  version        String   @unique
+  datasetVersion String?
+  accuracy       Float    @default(0.0)
+  precision      Float    @default(0.0)
+  recall         Float    @default(0.0)
+  f1             Float    @default(0.0)
+  sensitivity    Float    @default(0.0)
+  specificity    Float    @default(0.0)
+  auc            Float    @default(0.0)
+  isActive       Boolean  @default(false)
+  isDemo         Boolean  @default(true)
+  weightsUrl     String?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  action      String
+  resource    String
+  resourceId  String?
+  ipAddress   String?
+  userAgent   String?
+  detailsJson String?
+  createdAt   DateTime @default(now())
+
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+}

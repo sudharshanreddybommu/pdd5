@@ -1,0 +1,24 @@
+{
+  "name": "opmd-care",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:mobile": "cd mobile && npm run start",
+    "tunnel:mobile": "cd mobile && npm run tunnel",
+    "mobile": "cd mobile && npm run tunnel",
+    "dev:ml": "cd ml-service && python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload",
+    "train:ml": "cd ml-service && python train.py",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:mobile\"",
+    "build": "npm run build --prefix backend && npm run build --prefix frontend",
+    "test": "npm run test --prefix backend && npm run test --prefix frontend",
+    "install:mobile": "cd mobile && npm install",
+    "install:all": "npm install && npm install --prefix backend && npm install --prefix frontend && npm install --prefix mobile"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
+

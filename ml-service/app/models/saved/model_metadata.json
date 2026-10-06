@@ -1,0 +1,19 @@
+{
+  "model_name": "OPMD-Oral-Ensemble-Classifier",
+  "version": "v2.0.0-trained",
+  "trained_at": "2026-10-03T13:19:37Z",
+  "dataset_source": "C:\\Users\\pille\\Downloads\\archive\\Oral Images Dataset",
+  "total_samples": 2593,
+  "metrics": {
+    "accuracy": 0.9904,
+    "precision": 0.9883,
+    "recall": 0.9922,
+    "f1": 0.9902,
+    "auc": 0.9993
+  },
+  "classes": [
+    "Benign / Low Risk",
+    "Malignant / Premalignant (OPMD)"
+  ],
+  "feature_count": 19
+}
