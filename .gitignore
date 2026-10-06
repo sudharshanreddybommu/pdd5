@@ -59,3 +59,7 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Local Test Reports Output
+test-reports-excel/
+

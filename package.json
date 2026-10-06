@@ -2,6 +2,7 @@
   "name": "opmd-care",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
@@ -14,11 +15,13 @@
     "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:mobile\"",
     "build": "npm run build --prefix backend && npm run build --prefix frontend",
     "test": "npm run test --prefix backend && npm run test --prefix frontend",
+    "test:all": "npm run test --prefix backend && npm run test --prefix frontend && node scripts/generate_test_excel_reports.js",
+    "test:report:excel": "node scripts/generate_test_excel_reports.js",
     "install:mobile": "cd mobile && npm install",
     "install:all": "npm install && npm install --prefix backend && npm install --prefix frontend && npm install --prefix mobile"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "exceljs": "^4.4.0"
   }
 }
-
