@@ -13,6 +13,7 @@ import FindDoctorsPage from './pages/FindDoctorsPage';
 import PatientDashboard from './pages/PatientDashboard';
 import PatientAppointmentsPage from './pages/PatientAppointmentsPage';
 import DoctorDashboard from './pages/DoctorDashboard';
+import DatabaseExplorerPage from './pages/DatabaseExplorerPage';
 import { useAuth } from './context/AuthContext';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles?: Array<'PATIENT' | 'DOCTOR'> }> = ({
@@ -60,6 +61,11 @@ function App() {
             
             {/* Find Doctors & Google Maps */}
             <Route path="/find-doctors" element={<FindDoctorsPage />} />
+
+            {/* Live Database Explorer / Admin Panel */}
+            <Route path="/database" element={<DatabaseExplorerPage />} />
+            <Route path="/admin/database" element={<DatabaseExplorerPage />} />
+            <Route path="/admin" element={<DatabaseExplorerPage />} />
 
             {/* Patient Protected Routes */}
             <Route

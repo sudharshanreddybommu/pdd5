@@ -13,7 +13,8 @@ import {
   Shield,
   Stethoscope,
   ChevronDown,
-  Settings
+  Settings,
+  Database
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -116,6 +117,10 @@ const Navbar: React.FC = () => {
               </Link>
               <Link to="/find-doctors" className="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors">
                 {t('nav.findDoctors')}
+              </Link>
+              <Link to="/database" className="text-xs font-bold px-2.5 py-1 rounded-lg bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-100 border border-cyan-200 dark:border-cyan-800 transition-colors flex items-center space-x-1">
+                <Database className="w-3.5 h-3.5 text-cyan-600" />
+                <span>DB Viewer</span>
               </Link>
               {user && (
                 <Link to={getDashboardLink()} className="text-sm font-medium text-cyan-600 dark:text-cyan-400 hover:underline">
@@ -295,6 +300,14 @@ const Navbar: React.FC = () => {
                         <span>Profile & Settings</span>
                       </Link>
                     )}
+                    <Link
+                      to="/database"
+                      onClick={() => setShowUserMenu(false)}
+                      className="w-full text-left px-4 py-2 text-sm flex items-center space-x-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
+                    >
+                      <Database className="w-4 h-4 text-cyan-600" />
+                      <span>Database Explorer</span>
+                    </Link>
                     <button
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-2 text-sm flex items-center space-x-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30"
