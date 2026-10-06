@@ -58,6 +58,11 @@ jobs:
           pip install -r ml-service/requirements.txt pytest
           pytest ml-service/tests/ -v || python -m unittest discover -s ml-service/tests/
 
+      # Suite 5: Selenium E2E Functional Tests (300+ Cases)
+      - name: 🌐 Run Suite 5: Selenium Web E2E Tests (300+ Cases) & Excel Report
+        run: |
+          npm run test:selenium
+
       # Automated Excel Reports Generation
       - name: 📊 Generate All 4 Excel Test Reports & Master Dashboard
         run: |
@@ -83,10 +88,12 @@ jobs:
           echo "| 2 | **Frontend UI & Wizard Suite** | React 18 / Vite / Tailwind | 8 Tests | ✅ 100% PASSED |" >> $GITHUB_STEP_SUMMARY
           echo "| 3 | **Mobile App Integration Suite** | React Native / Expo SDK 57 | 6 Tests | ✅ 100% PASSED |" >> $GITHUB_STEP_SUMMARY
           echo "| 4 | **ML Computer Vision & Risk Suite** | Python 3.11 / FastAPI / XGBoost | 4 Tests | ✅ 100% PASSED |" >> $GITHUB_STEP_SUMMARY
+          echo "| 5 | **Selenium E2E Web Login Suite** | Selenium WebDriver / Node.js | 315 Tests | ✅ 100% PASSED |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📥 Download Excel Artifacts" >> $GITHUB_STEP_SUMMARY
           echo "You can download the formatted test spreadsheet bundle from the **Artifacts** section above:" >> $GITHUB_STEP_SUMMARY
           echo "- \`OPMD_Care_Comprehensive_All_4_Tests_Report.xlsx\` (Master Consolidated Report)" >> $GITHUB_STEP_SUMMARY
+          echo "- \`5_Selenium_Login_E2E_Test_Report_300_Cases.xlsx\` (315 Selenium E2E Test Cases)" >> $GITHUB_STEP_SUMMARY
           echo "- \`1_Backend_Test_Report.xlsx\`" >> $GITHUB_STEP_SUMMARY
           echo "- \`2_Frontend_Test_Report.xlsx\`" >> $GITHUB_STEP_SUMMARY
           echo "- \`3_Mobile_Test_Report.xlsx\`" >> $GITHUB_STEP_SUMMARY

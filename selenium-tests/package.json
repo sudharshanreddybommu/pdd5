@@ -1,0 +1,15 @@
+{
+  "name": "opmd-care-selenium-tests",
+  "version": "1.0.0",
+  "description": "Selenium E2E Automated Functional Test Suite for OPMD Care Web Platform",
+  "main": "tests/login-tests.js",
+  "type": "module",
+  "scripts": {
+    "test": "node tests/login-tests.js",
+    "test:headless": "node tests/login-tests.js --headless"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "selenium-webdriver": "^4.27.0"
+  }
+}
