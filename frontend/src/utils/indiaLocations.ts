@@ -199,3 +199,10 @@ export const ALL_INDIAN_CITIES_FLAT: string[] = Array.from(
 
 // List of all Indian State names
 export const ALL_INDIAN_STATES: string[] = ALL_INDIA_STATES_AND_CITIES.map(s => s.state);
+export const ALL_INDIA_STATES = ALL_INDIAN_STATES;
+
+// Helper to get cities for a state
+export const getCitiesForState = (stateName: string): string[] => {
+  const match = ALL_INDIA_STATES_AND_CITIES.find(s => s.state.toLowerCase() === stateName.trim().toLowerCase());
+  return match ? match.cities : [];
+};

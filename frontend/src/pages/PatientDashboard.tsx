@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Camera,
@@ -14,36 +14,50 @@ import {
   Activity,
   Plus,
   ShieldCheck,
-  Download
+  Download,
+  User,
+  Settings
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import ScreeningReportViewer from '../components/ScreeningReportViewer';
+import PatientProfileModal from '../components/PatientProfileModal';
 
 const PatientDashboard: React.FC = () => {
   const { t } = useTranslation();
   const { user, profile } = useAuth();
+  const [searchParams] = useSearchParams();
 
   const [screenings, setScreenings] = useState<any[]>([]);
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedScreeningForReport, setSelectedScreeningForReport] = useState<any | null>(null);
+  const [showProfileModal, setShowProfileModal] = useState<boolean>(
+    searchParams.get('tab') === 'profile' || searchParams.get('editProfile') === 'true'
+  );
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [scRes, aptRes] = await Promise.all([
-          api.get('/patient/screenings'),
-          api.get('/patient/appointments')
-        ]);
-        if (scRes.data.success) setScreenings(scRes.data.screenings || []);
-        if (aptRes.data.success) setAppointments(aptRes.data.appointments || []);
-      } catch (err) {
-        console.error('Error loading patient dashboard data', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (searchParams.get('tab') === 'profile' || searchParams.get('editProfile') === 'true') {
+      setShowProfileModal(true);
+    }
+  }, [searchParams]);
+
+  const fetchData = async () => {
+    try {
+      const [scRes, aptRes] = await Promise.all([
+        api.get('/patient/screenings'),
+        api.get('/patient/appointments')
+      ]);
+      if (scRes.data.success) setScreenings(scRes.data.screenings || []);
+      if (aptRes.data.success) setAppointments(aptRes.data.appointments || []);
+    } catch (err) {
+      console.error('Error loading patient dashboard data', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -83,21 +97,32 @@ const PatientDashboard: React.FC = () => {
               PATIENT HEALTH PORTAL
             </span>
             <h1 className="text-3xl font-black mt-1 mb-2">
-              Welcome back, {profile?.fullName || user?.email?.split('@')[0] || 'Patient'}
+              Welcome back, {profile?.fullName || user?.fullName || user?.email?.split('@')[0] || 'Patient'}
             </h1>
             <p className="text-xs sm:text-sm text-cyan-100/80 leading-relaxed mb-6">
-              Track your oral mucosal health, view AI screening predictions, and consult verified oral oncologists.
+              Track your oral mucosal health, view AI screening predictions, and update your medical habits anytime.
             </p>
 
-            {/* Main CTA */}
-            <Link
-              to="/screening"
-              className="inline-flex items-center space-x-3 px-6 py-3.5 bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-slate-950 font-extrabold text-sm rounded-2xl shadow-lg shadow-cyan-500/30 transition-transform transform hover:-translate-y-0.5"
-            >
-              <Camera className="w-5 h-5 text-slate-950" />
-              <span className="tracking-wide">START ORAL SCREENING</span>
-              <ArrowRight className="w-4 h-4 text-slate-950" />
-            </Link>
+            {/* Actions: Start Screening & Edit Profile */}
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                to="/screening"
+                className="inline-flex items-center space-x-3 px-6 py-3.5 bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 hover:to-teal-300 text-slate-950 font-extrabold text-sm rounded-2xl shadow-lg shadow-cyan-500/30 transition-transform transform hover:-translate-y-0.5"
+              >
+                <Camera className="w-5 h-5 text-slate-950" />
+                <span className="tracking-wide">START ORAL SCREENING</span>
+                <ArrowRight className="w-4 h-4 text-slate-950" />
+              </Link>
+
+              <button
+                type="button"
+                onClick={() => setShowProfileModal(true)}
+                className="inline-flex items-center space-x-2 px-5 py-3.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-sm rounded-2xl backdrop-blur-sm transition-all"
+              >
+                <Settings className="w-4 h-4 text-cyan-300" />
+                <span>Edit Profile & Settings</span>
+              </button>
+            </div>
           </div>
 
           <div className="hidden lg:block absolute right-8 bottom-0 opacity-15 pointer-events-none">
@@ -223,21 +248,24 @@ const PatientDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* 6. Health Education */}
-          <div className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-amber-500 transition-all flex flex-col justify-between group">
+          {/* 6. Profile & Account Settings */}
+          <div
+            onClick={() => setShowProfileModal(true)}
+            className="p-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-cyan-500 transition-all flex flex-col justify-between group cursor-pointer"
+          >
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <BookOpen className="w-6 h-6" />
+              <div className="w-12 h-12 rounded-2xl bg-cyan-100 dark:bg-cyan-950 text-cyan-600 dark:text-cyan-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <User className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
-                6. Oral Health Education
+                6. Profile & Health Settings
               </h3>
               <p className="text-xs text-slate-500 leading-relaxed">
-                Learn early warning signs, tobacco cessation guidelines, and self-examination routines for OPMDs.
+                Update your personal info, state/city, emergency contact, tobacco/smoking habits, and password anytime.
               </p>
             </div>
-            <div className="mt-4 flex items-center text-xs font-bold text-amber-600 dark:text-amber-400">
-              <span>Read Clinical Guide</span>
+            <div className="mt-4 flex items-center text-xs font-bold text-cyan-600 dark:text-cyan-400">
+              <span>Manage Profile & Habits</span>
               <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
             </div>
           </div>
@@ -320,8 +348,18 @@ const PatientDashboard: React.FC = () => {
         />
       )}
 
+      {/* Patient Profile & Account Settings Modal */}
+      <PatientProfileModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        onSuccess={() => {
+          fetchData();
+        }}
+      />
+
     </div>
   );
 };
 
 export default PatientDashboard;
+

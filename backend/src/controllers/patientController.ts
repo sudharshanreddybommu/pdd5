@@ -20,19 +20,105 @@ export async function getPatientProfile(req: AuthRequest, res: Response): Promis
 export async function updatePatientProfile(req: AuthRequest, res: Response): Promise<void> {
   try {
     const userId = req.user?.id;
+    let user = memoryDb.users.find(u => u.id === userId);
     let profile = memoryDb.patientProfiles.find(p => p.userId === userId);
 
     if (!profile) {
-      res.status(404).json({ success: false, message: 'Profile not found.' });
-      return;
+      // Auto-create patient profile if missing
+      profile = {
+        id: 'pat-' + Date.now(),
+        userId: userId!,
+        fullName: req.body.fullName || user?.fullName || 'Patient',
+        phone: req.body.phone || user?.phone || '',
+        gender: req.body.gender || 'Other',
+        age: req.body.age || 30,
+        city: req.body.city || '',
+        state: req.body.state || '',
+        tobaccoHabit: req.body.tobaccoHabit || 'NO',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      memoryDb.patientProfiles.push(profile);
     }
 
-    Object.assign(profile, req.body, { updatedAt: new Date().toISOString() });
+    const {
+      fullName,
+      phone,
+      email,
+      age,
+      gender,
+      tobaccoHabit,
+      arecaNutHabit,
+      alcoholHabit,
+      smokingDuration,
+      address,
+      city,
+      state,
+      pincode,
+      bloodGroup,
+      emergencyContact,
+      medicalHistory,
+      avatarUrl,
+      currentPassword,
+      newPassword
+    } = req.body;
+
+    // Handle Password Change if requested
+    if (newPassword && currentPassword && user?.passwordHash) {
+      const bcrypt = (await import('bcryptjs')).default;
+      const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
+      if (!isMatch) {
+        res.status(400).json({ success: false, message: 'Current password does not match.' });
+        return;
+      }
+      user.passwordHash = await bcrypt.hash(newPassword, 10);
+    }
+
+    // Update User core fields
+    if (user) {
+      if (fullName) user.fullName = fullName;
+      if (phone) user.phone = phone;
+      if (email) user.email = email;
+      user.updatedAt = new Date().toISOString();
+    }
+
+    // Update Profile extended fields
+    Object.assign(profile, {
+      fullName: fullName || profile.fullName,
+      phone: phone || profile.phone,
+      age: age !== undefined ? parseInt(age, 10) : profile.age,
+      gender: gender || profile.gender,
+      tobaccoHabit: tobaccoHabit || profile.tobaccoHabit,
+      arecaNutHabit: arecaNutHabit !== undefined ? arecaNutHabit : profile.arecaNutHabit,
+      alcoholHabit: alcoholHabit !== undefined ? alcoholHabit : profile.alcoholHabit,
+      smokingDuration: smokingDuration || profile.smokingDuration,
+      address: address || profile.address,
+      city: city || profile.city,
+      state: state || profile.state,
+      pincode: pincode || profile.pincode,
+      bloodGroup: bloodGroup || profile.bloodGroup,
+      emergencyContact: emergencyContact || profile.emergencyContact,
+      medicalHistory: medicalHistory || profile.medicalHistory,
+      avatarUrl: avatarUrl || profile.avatarUrl,
+      updatedAt: new Date().toISOString()
+    });
+
     memoryDb.save();
 
-    res.json({ success: true, message: 'Profile updated successfully.', profile });
+    res.json({
+      success: true,
+      message: 'Profile and settings updated successfully.',
+      profile,
+      user: user ? {
+        id: user.id,
+        email: user.email,
+        phone: user.phone,
+        fullName: user.fullName,
+        role: user.role
+      } : undefined
+    });
   } catch (err: any) {
-    res.status(500).json({ success: false, message: 'Error updating profile.' });
+    res.status(500).json({ success: false, message: 'Error updating patient profile.' });
   }
 }
 

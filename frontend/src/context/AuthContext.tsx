@@ -8,6 +8,8 @@ export interface User {
   phone?: string;
   email: string;
   role: UserRole;
+  fullName?: string;
+  avatarUrl?: string;
   isVerified?: boolean;
 }
 
@@ -19,6 +21,7 @@ interface AuthContextType {
   login: (userData: { user: User; token: string; profile?: any; hospital?: any }) => void;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  updateProfileState: (newProfile: any, newUser?: any) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -59,6 +62,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateProfileState = (newProfile: any, newUser?: any) => {
+    if (newProfile) {
+      setProfile(newProfile);
+      localStorage.setItem('opmd_profile', JSON.stringify(newProfile));
+    }
+    if (newUser) {
+      setUser(newUser);
+      localStorage.setItem('opmd_user', JSON.stringify(newUser));
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('opmd_token');
     if (token) {
@@ -92,7 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, hospital, loading, login, logout, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, hospital, loading, login, logout, refreshProfile, updateProfileState }}>
       {children}
     </AuthContext.Provider>
   );
@@ -103,3 +117,4 @@ export const useAuth = () => {
   if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 };
+
