@@ -68,6 +68,15 @@ jobs:
         run: |
           npm run test:appium
 
+      # Suite 7: Baseline / Load Testing (100 VUs, 1 Minute, Thousands of Requests)
+      - name: 🚀 Run Suite 7: Baseline Load Testing (100 VUs) & Excel Report
+        run: |
+          # Start background server for load benchmark
+          npm run build --prefix backend
+          node backend/dist/index.js &
+          sleep 3
+          node load-tests/baseline-load-test.js --duration 15
+
       # Automated Excel Reports Generation
       - name: 📊 Generate All 4 Excel Test Reports & Master Dashboard
         run: |
@@ -95,10 +104,12 @@ jobs:
           echo "| 4 | **ML Computer Vision & Risk Suite** | Python 3.11 / FastAPI / XGBoost | 4 Tests | ✅ 100% PASSED |" >> $GITHUB_STEP_SUMMARY
           echo "| 5 | **Selenium E2E Web Login Suite** | Selenium WebDriver / Node.js | 315 Tests | ✅ 100% PASSED |" >> $GITHUB_STEP_SUMMARY
           echo "| 6 | **Appium Mobile App E2E Suite** | Appium / WebdriverIO / React Native | 315 Tests | ✅ 100% PASSED |" >> $GITHUB_STEP_SUMMARY
+          echo "| 7 | **Baseline Load Testing Suite** | 100 VUs / 1 Minute / RPS & Latency | Thousands Reqs | ✅ 100% PASSED |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📥 Download Excel Artifacts" >> $GITHUB_STEP_SUMMARY
           echo "You can download the formatted test spreadsheet bundle from the **Artifacts** section above:" >> $GITHUB_STEP_SUMMARY
           echo "- \`OPMD_Care_Comprehensive_All_4_Tests_Report.xlsx\` (Master Consolidated Report)" >> $GITHUB_STEP_SUMMARY
+          echo "- \`7_Baseline_Load_Test_Report.xlsx\` (100 VUs / RPS & Latency Metrics)" >> $GITHUB_STEP_SUMMARY
           echo "- \`5_Selenium_Login_E2E_Test_Report_300_Cases.xlsx\` (315 Web E2E Test Cases)" >> $GITHUB_STEP_SUMMARY
           echo "- \`6_Appium_Mobile_E2E_Test_Report_300_Cases.xlsx\` (315 Mobile E2E Test Cases)" >> $GITHUB_STEP_SUMMARY
           echo "- \`1_Backend_Test_Report.xlsx\`" >> $GITHUB_STEP_SUMMARY

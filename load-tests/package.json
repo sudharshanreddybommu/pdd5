@@ -1,0 +1,15 @@
+{
+  "name": "opmd-care-load-tests",
+  "version": "1.0.0",
+  "description": "Baseline & Stress Load Testing Engine for OPMD Care Platform",
+  "main": "baseline-load-test.js",
+  "type": "module",
+  "scripts": {
+    "test:load": "node baseline-load-test.js",
+    "test:load:quick": "node baseline-load-test.js --duration 10",
+    "test:load:full": "node baseline-load-test.js --duration 60"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0"
+  }
+}

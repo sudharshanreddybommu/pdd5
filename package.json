@@ -19,6 +19,7 @@
     "test:report:excel": "node scripts/generate_test_excel_reports.js",
     "test:selenium": "node selenium-tests/tests/login-tests.js",
     "test:appium": "node appium-tests/tests/mobile-e2e-tests.js",
+    "test:load": "node load-tests/baseline-load-test.js",
     "install:mobile": "cd mobile && npm install",
     "install:all": "npm install && npm install --prefix backend && npm install --prefix frontend && npm install --prefix mobile"
   },
