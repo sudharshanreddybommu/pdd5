@@ -12,13 +12,14 @@
     },
     {
       "id": "usr-pat-1791171808065-3ust",
-      "phone": "918328487277",
+      "phone": "8328487277",
       "email": "pilletihemanthreddy199@gmail.com",
       "passwordHash": "$2a$10$/eiIRBkMIgcI.9gf0c0WvOO1xA.iZ/yKsytxCNjTKJeVJlgali3Xy",
       "role": "PATIENT",
       "isVerified": true,
       "createdAt": "2026-10-05T03:43:28.065Z",
-      "updatedAt": "2026-10-05T03:43:28.065Z"
+      "updatedAt": "2026-10-06T06:50:41.864Z",
+      "fullName": "sudharshan"
     },
     {
       "id": "usr-doc-1791172970017-0d5f",
@@ -62,14 +63,14 @@
     {
       "id": "pat-prof-1791171808065",
       "userId": "usr-pat-1791171808065-3ust",
-      "fullName": "Rekanth",
-      "phone": "918328487277",
+      "fullName": "sudharshan",
+      "phone": "8328487277",
       "email": "pilletihemanthreddy199@gmail.com",
       "dob": "2005-12-01",
       "gender": "Male",
-      "address": "",
-      "city": "Hyderabad",
-      "state": "Telangana",
+      "address": "b.mattam",
+      "city": "Kadapa",
+      "state": "Andhra Pradesh",
       "country": "India",
       "emergencyContact": "",
       "tobaccoUse": "Chewable Tobacco",
@@ -82,7 +83,15 @@
       "currentMedication": "None",
       "allergies": "None",
       "createdAt": "2026-10-05T03:43:28.065Z",
-      "updatedAt": "2026-10-05T03:43:28.065Z"
+      "updatedAt": "2026-10-06T06:50:41.864Z",
+      "age": 20,
+      "tobaccoHabit": "NO",
+      "arecaNutHabit": false,
+      "alcoholHabit": false,
+      "smokingDuration": "None",
+      "pincode": "516503",
+      "bloodGroup": "B+",
+      "avatarUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80"
     },
     {
       "id": "pat-prof-1791187087165",
