@@ -1,11 +1,15 @@
 import app from './app.js';
 import { config } from './config/index.js';
 import { seedInitialData } from './database/seed.js';
+import { connectMongoDB } from './database/mongodb.js';
 
 async function startServer() {
   try {
-    // Seed initial demo data
+    // 1. Seed initial data
     await seedInitialData();
+
+    // 2. Connect to MongoDB & sync data
+    await connectMongoDB();
 
     app.listen(config.port, '0.0.0.0', () => {
       console.log(`\n======================================================`);
